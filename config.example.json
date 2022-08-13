@@ -9,6 +9,7 @@
     },
     "Discord": {
         "BotName": "RoC-Bot",
+        "PresenceText": "Text to display as presence/game in Discord",
         "BotToken": "<Bot-token-from-discordapp.com/developers>",
         "ServerName": "SWG Awesomeness",
         "ChatChannel": "general",

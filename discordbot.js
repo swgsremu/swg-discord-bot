@@ -1,12 +1,44 @@
 const Discord = require('discord.js');
+const Intents = require('discord.js');
 const SWG = require('./swgclient');
-const config = require('./config');
+
+let config;
+
+function loadConfig() {
+    try {
+        confg = require('./config');
+    }
+    catch(e) {
+        config = {
+            SWG: {
+                LoginAddress: process.env.LoginAddress,
+                LoginPort: process.env.LoginPort,
+                Username: process.env.Username,
+                Password: process.env.Password,
+                Character: process.env.Character,
+                ChatRoom: process.env.ChatRoom
+            },
+            Discord: {
+                BotName: process.env.BotName,
+                PresenceText: process.env.PresenceText,
+                BotToken: process.env.BotToken,
+                ServerName: process.env.ServerName,
+                ChatChannel: process.env.ChatChannel,
+                NotificationChannel: process.env.NotificationChannel,
+                NotificationMentionRole: process.env.NotificationMentionRole
+            }
+        }
+    }
+}
+
+loadConfig();
+
 SWG.login(config.SWG);
 
 var client, server, notif, chat, notifRole;
 function discordBot() {
-    client = new Discord.Client();
 
+    client = new Discord.Client({ws:{intents:Intents.ALL}});
     client.on('message', message => {
         if (message.content.startsWith('!server')) {
             message.reply(SWG.isConnected ? "The server is UP!" : "The server is DOWN :(");
@@ -25,7 +57,7 @@ function discordBot() {
     });
 
     client.on('disconnect', event => {
-        try {notif.send("RoC-Bot disconnected");}catch(ex){}
+        try {notif.send(config.Discord.BotName + " disconnected");}catch(ex){}
         client = server = notif = chat = notifRole = null;
         console.log("Discord disconnect: " + JSON.stringify(event,null,2));
         setTimeout(discordBot, 1000);
@@ -33,7 +65,7 @@ function discordBot() {
 
     client.login(config.Discord.BotToken)
         .then(t => {
-            client.user.setPresence({ status: "online", game: {name: "Progor-Chat"}});
+            client.user.setPresence({ status: "online", game: {name:config.Discord.PresenceText}});
             server = client.guilds.find("name", config.Discord.ServerName);
             notif = server.channels.find("name", config.Discord.NotificationChannel);
             chat = server.channels.find("name", config.Discord.ChatChannel);
